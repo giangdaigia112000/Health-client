@@ -186,10 +186,7 @@ const Home: NextPage = () => {
           vldl: vldl,
           bmi: Math.floor(weight / ((height / 100) * (height / 100))),
         };
-        // const response = await axios.post("https://www.facebook.com/",data);
-        const response = {
-          data: { result: "Y" },
-        };
+        const response = await axios.post("localhost:8080/", data);
         setResServer(response.data.result);
         setLoading(false);
         setIsModalVisible(true);
@@ -225,6 +222,30 @@ const Home: NextPage = () => {
           datatable.push(doc.data());
         });
         const columns: ColumnsType<DataType> = [
+          {
+            title: ".........Lúc..........",
+            dataIndex: "time",
+            key: "time",
+            render: (time: Date) => (
+              <p>{moment(time).locale("vi").format("llll")}</p>
+            ),
+          },
+          {
+            title: "Kết quả",
+            key: "result",
+            dataIndex: "result",
+            render: (_, { result }) => (
+              <>
+                {result == "Y" ? (
+                  <Tag color={"red"}>Tiểu Đường</Tag>
+                ) : result == "N" ? (
+                  <Tag color={"green"}>An toàn</Tag>
+                ) : (
+                  <Tag color={"yellow"}>Có nguy cơ</Tag>
+                )}
+              </>
+            ),
+          },
           {
             title: "Giới tính",
             dataIndex: "gender",
@@ -285,30 +306,6 @@ const Home: NextPage = () => {
             title: "VLDL(mmol/l)",
             dataIndex: "vldl",
             key: "vldl",
-          },
-          {
-            title: "Lúc",
-            dataIndex: "time",
-            key: "time",
-            render: (time: Date) => (
-              <p>{moment(time).locale("vi").format("llll")}</p>
-            ),
-          },
-          {
-            title: "Kết quả",
-            key: "result",
-            dataIndex: "result",
-            render: (_, { result }) => (
-              <>
-                {result == "Y" ? (
-                  <Tag color={"red"}>Tiểu Đường</Tag>
-                ) : result == "N" ? (
-                  <Tag color={"green"}>An toàn</Tag>
-                ) : (
-                  <Tag color={"yellow"}>Có nguy cơ</Tag>
-                )}
-              </>
-            ),
           },
         ];
         setColumns(columns);
@@ -683,14 +680,27 @@ const Home: NextPage = () => {
       >
         <img
           className="w-full h-[300px] object-cover"
-          src="yes.png"
-          alt="Bạn có nguy cơ cao bị tiểu đường"
+          src={`${resServer == "N" ? "no.png" : "yes.png"}`}
         />
-        <div className="w-full text-center">
-          <h2 className="text-xl  font-bold	 text-[#f9f8f8] bg-[#f51313] py-1 rounded">
-            Bạn có nguy cơ rất cao bị bệnh tiểu đường !!!.
-          </h2>
-        </div>
+        {resServer == "Y" ? (
+          <div className="w-full text-center">
+            <h2 className="text-xl  font-bold	 text-[#f9f8f8] bg-[#f51313] py-1 rounded">
+              Bạn có nguy cơ rất cao bị bệnh tiểu đường !!!.
+            </h2>
+          </div>
+        ) : resServer == "N" ? (
+          <div className="w-full text-center">
+            <h2 className="text-xl  font-bold	 text-[#f9f8f8] bg-[#2fdf07] py-1 rounded">
+              Các chỉ số ở ngưỡi an toàn.
+            </h2>
+          </div>
+        ) : (
+          <div className="w-full text-center">
+            <h2 className="text-xl  font-bold	 text-[#f9f8f8] bg-[#f97821] py-1 rounded">
+              Bạn có khả năng bị tiểu đường.
+            </h2>
+          </div>
+        )}
       </Modal>
       <Modal
         title="Lịch sử kiểm tra của bạn"
