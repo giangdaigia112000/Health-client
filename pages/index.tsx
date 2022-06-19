@@ -8,18 +8,44 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import axios from "axios";
-import { InputNumber, notification, Modal, Button } from "antd";
+import { InputNumber, notification, Modal, Button, Table, Tag } from "antd";
 import {
   InfoCircleFilled,
   MinusOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
-import app from "../utils/firebase";
+import moment from "moment";
+import "moment/locale/vi";
+import type { ColumnsType } from "antd/lib/table";
+import {
+  doc,
+  setDoc,
+  addDoc,
+  collection,
+  getDocs,
+  updateDoc,
+  getDoc,
+} from "firebase/firestore";
+import app, { db } from "../utils/firebase";
 import Loading from "../components/loading";
-import { async } from "@firebase/util";
 interface user {
   name: string | null;
   uid: string | null;
+}
+interface DataType {
+  gender: string;
+  age: number;
+  bmi: number;
+  urea: number;
+  cr: number;
+  hbA1c: number;
+  chol: number;
+  tg: number;
+  hdl: number;
+  ldl: number;
+  vldl: number;
+  result: string;
+  time: Date;
 }
 const Home: NextPage = () => {
   console.log("rerender");
@@ -93,6 +119,9 @@ const Home: NextPage = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isShowHistory, setIsShowHistory] = useState(false);
 
+  const [columns, setColumns] = useState<any>();
+  const [dataTable, setDataTable] = useState<any[]>();
+
   const [loading, setLoading] = useState(false);
   const listInfo = useRef<any>();
   const handleClickSocial = (provider: any) => {
@@ -144,13 +173,32 @@ const Home: NextPage = () => {
     ) {
       setLoading(true);
       try {
-        // const response = await axios.post("https://www.facebook.com/");
+        const data = {
+          gender: gender,
+          age: age,
+          urea: urea,
+          cr: cr,
+          hbA1c: hbA1c,
+          chol: chol,
+          tg: tg,
+          hdl: hdl,
+          ldl: ldl,
+          vldl: vldl,
+          bmi: Math.floor(weight / ((height / 100) * (height / 100))),
+        };
+        // const response = await axios.post("https://www.facebook.com/",data);
         const response = {
           data: { result: "Y" },
         };
         setResServer(response.data.result);
         setLoading(false);
         setIsModalVisible(true);
+        const docR = collection(db, `${user?.uid}`);
+        await addDoc(docR, {
+          ...data,
+          result: response.data.result,
+          time: new Date(Date.now()).toString(),
+        });
       } catch (error) {
         setLoading(false);
       }
@@ -168,8 +216,114 @@ const Home: NextPage = () => {
     setIsModalVisible(false);
   };
   const checkHistory = async () => {
-    console.log("okee");
-    setIsShowHistory(true);
+    try {
+      const docR = collection(db, `${user?.uid}`);
+      const docSnap = await getDocs(docR);
+      const datatable: any[] = [];
+      if (docSnap.docs) {
+        docSnap.docs.forEach((doc) => {
+          datatable.push(doc.data());
+        });
+        const columns: ColumnsType<DataType> = [
+          {
+            title: "Giới tính",
+            dataIndex: "gender",
+            key: "gender",
+            render: (text) => <a>{text}</a>,
+          },
+          {
+            title: "Tuổi",
+            dataIndex: "age",
+            key: "age",
+          },
+          {
+            title: "BMI",
+            dataIndex: "bmi",
+            key: "bmi",
+          },
+          {
+            title: "Ure(mmol/l)",
+            dataIndex: "urea",
+            key: "urea",
+          },
+          {
+            title: "Crom(mmol/l)",
+            dataIndex: "cr",
+            key: "cr",
+          },
+          {
+            title: "hbA1c(%)",
+            dataIndex: "hbA1c",
+            key: "hbA1c",
+          },
+          {
+            title: "Cholesterol(mmol/l)",
+            dataIndex: "chol",
+            key: "chol",
+          },
+          {
+            title: "Triglyceride(mmol/l)",
+            dataIndex: "tg",
+            key: "tg",
+          },
+          {
+            title: "HDL(mmol/l)",
+            dataIndex: "hdl",
+            key: "hdl",
+          },
+          {
+            title: "LDL(mmol/l)",
+            dataIndex: "ldl",
+            key: "ldl",
+          },
+          {
+            title: "VLDL(mmol/l)",
+            dataIndex: "vldl",
+            key: "vldl",
+          },
+          {
+            title: "VLDL(mmol/l)",
+            dataIndex: "vldl",
+            key: "vldl",
+          },
+          {
+            title: "Lúc",
+            dataIndex: "time",
+            key: "time",
+            render: (time: Date) => (
+              <p>{moment(time).locale("vi").format("llll")}</p>
+            ),
+          },
+          {
+            title: "Kết quả",
+            key: "result",
+            dataIndex: "result",
+            render: (_, { result }) => (
+              <>
+                {result == "Y" ? (
+                  <Tag color={"red"}>Tiểu Đường</Tag>
+                ) : result == "N" ? (
+                  <Tag color={"green"}>An toàn</Tag>
+                ) : (
+                  <Tag color={"yellow"}>Có nguy cơ</Tag>
+                )}
+              </>
+            ),
+          },
+        ];
+        setColumns(columns);
+      }
+      setIsShowHistory(true);
+      console.log(datatable);
+
+      setDataTable(datatable);
+    } catch (error) {
+      notification["warning"]({
+        message: "Cảnh báo lỗi từ server",
+        description: "Lỗi server !!!",
+        placement: "topLeft",
+      });
+    }
   };
   return (
     <>
@@ -549,10 +703,8 @@ const Home: NextPage = () => {
         }}
         width={1000}
       >
-        <div className="w-full text-center">
-          <h2 className="text-xl  font-bold	 text-[#f9f8f8] bg-[#f51313] py-1 rounded">
-            Bạn có nguy cơ rất cao bị bệnh tiểu đường !!!.
-          </h2>
+        <div className="w-full overflow-x-scroll">
+          <Table columns={columns} dataSource={dataTable} />
         </div>
       </Modal>
     </>
