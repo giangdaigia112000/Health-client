@@ -1,16 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import "antd/dist/antd.css";
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Roboto:wght@300&display=swap");
 html,
 body {
-  padding: 0;
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+    padding: 0;
+    margin: 0;
+    font-family: "Open Sans", sans-serif;
 }
 
 a {
-  color: inherit;
-  text-decoration: none;
+    color: inherit;
+    text-decoration: none;
 }
 
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+
+/* Track */
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+
+/* Handle */
+
+::-webkit-scrollbar-thumb {
+    background: rgb(196, 196, 196);
+    border-radius: 10px;
+}
+
+
+/* Handle on hover */
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(121, 121, 121);
+}
+
+.scrollbox {
+    width: 10em;
+    height: 10em;
+    overflow: auto;
+    visibility: hidden;
+}
+
+.scrollbox-content,
+.scrollbox:hover,
+.scrollbox:focus {
+    visibility: visible;
+}
+
+.wrapper {
+    background-image: url(https://hellobacsi.com/images/toolBannerBlue-circle.svg);
+    background-repeat: no-repeat;
+    background-position: center bottom;
+    background-size: 130%;
+}
+
+.active_gender {
+    border: 1px solid #454fff;
+}
+
+.active_gender span {
+    color: #4953ff;
+}
+
+.show_content {
+    display: block;
+    height: 130px;
+}
+
+.title_focus {
+    font-weight: 600;
 }
